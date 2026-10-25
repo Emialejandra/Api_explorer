@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 750" width="500" height="750">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141824"/>
+      <stop offset="50%" stop-color="#1b2030"/>
+      <stop offset="100%" stop-color="#0d111a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e50914"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="750" fill="url(#bg)"/>
+  <!-- Film Strip / Clapperboard Icon -->
+  <g transform="translate(175, 270)">
+    <rect x="0" y="0" width="150" height="150" rx="24" fill="#242c40" stroke="url(#accent)" stroke-width="3"/>
+    <path d="M45 45 h60 v60 h-60 z" fill="none" stroke="#64748b" stroke-width="4"/>
+    <circle cx="75" cy="75" r="18" fill="url(#accent)" opacity="0.8"/>
+    <path d="M45 55 h60 M45 75 h60 M45 95 h60" stroke="#334155" stroke-width="2"/>
+  </g>
+  <text x="250" y="470" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" text-anchor="middle" letter-spacing="1">
+    CINEEXPLORER
+  </text>
+  <text x="250" y="505" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" text-anchor="middle">
+    Póster no disponible
+  </text>
+</svg>

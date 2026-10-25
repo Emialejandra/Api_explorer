@@ -1,0 +1,230 @@
+<ion-header [translucent]="true" class="detail-header">
+  <ion-toolbar class="detail-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/peliculas" text="" icon="arrow-back" class="custom-back-btn"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="detail-header-title">
+      {{ pelicula?.title || 'Detalle de Película' }}
+    </ion-title>
+    @if (pelicula) {
+      <ion-buttons slot="end">
+        <ion-button (click)="toggleFavorito()" class="fav-action-btn" [class.is-fav]="isFavorito">
+          <ion-icon [name]="isFavorito ? 'heart' : 'heart-outline'"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="detail-content">
+  <!-- Estado de Carga (Skeleton) -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="skeleton-backdrop">
+        <ion-spinner name="crescent" color="danger"></ion-spinner>
+        <span>Consultando TMDB...</span>
+      </div>
+      <div class="skeleton-body">
+        <div class="skeleton-bar title"></div>
+        <div class="skeleton-bar subtitle"></div>
+        <div class="skeleton-bar text"></div>
+        <div class="skeleton-bar text"></div>
+        <div class="skeleton-bar text short"></div>
+      </div>
+    </div>
+  }
+
+  <!-- Estado de Error -->
+  @if (errorMessage && !isLoading) {
+    <div class="error-container">
+      <div class="error-card">
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+        <h3>No pudimos cargar la película</h3>
+        <p>{{ errorMessage }}</p>
+        <div class="error-actions">
+          <ion-button (click)="reintentar()" class="retry-btn">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Reintentar
+          </ion-button>
+          <ion-button fill="outline" color="light" (click)="regresar()">
+            Volver al catálogo
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Contenido de Detalle -->
+  @if (pelicula && !isLoading) {
+    <div class="movie-detail-view">
+      <!-- Hero con Backdrop -->
+      <div class="hero-backdrop">
+        <img
+          [src]="getBackdropUrl(pelicula.backdrop_path)"
+          [alt]="pelicula.title"
+          (error)="onBackdropError($event)"
+          class="backdrop-img"
+        />
+        <div class="backdrop-gradient"></div>
+
+        <!-- Poster y encabezado flotante -->
+        <div class="hero-overlay-content">
+          <div class="poster-box">
+            <img
+              [src]="getPosterUrl(pelicula.poster_path)"
+              [alt]="pelicula.title"
+              (error)="onPosterError($event)"
+              class="poster-img"
+            />
+          </div>
+
+          <div class="hero-titles">
+            @if (pelicula.status) {
+              <div class="status-badge">
+                {{ pelicula.status }}
+              </div>
+            }
+            <h1 class="movie-main-title">{{ pelicula.title }}</h1>
+            @if (pelicula.tagline) {
+              <p class="tagline">«{{ pelicula.tagline }}»</p>
+            }
+            @if (pelicula.original_title && pelicula.original_title !== pelicula.title) {
+              <p class="original-title">
+                Título original: <em>{{ pelicula.original_title }}</em>
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Metadatos Clave -->
+      <div class="meta-strip">
+        <div class="meta-item rating">
+          <ion-icon name="star" class="star-icon"></ion-icon>
+          <div class="meta-text">
+            <span class="value">{{ pelicula.vote_average | number:'1.1-1' }}</span>
+            <span class="label">{{ pelicula.vote_count }} votos</span>
+          </div>
+        </div>
+
+        <div class="meta-divider"></div>
+
+        <div class="meta-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <div class="meta-text">
+            <span class="value">{{ pelicula.release_date || 'N/D' }}</span>
+            <span class="label">Estreno</span>
+          </div>
+        </div>
+
+        <div class="meta-divider"></div>
+
+        <div class="meta-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <div class="meta-text">
+            <span class="value">{{ formatRuntime(pelicula.runtime) }}</span>
+            <span class="label">Duración</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-body-container">
+        <!-- Botón de Favoritos Acción Rápida -->
+        <div class="action-bar">
+          <button
+            type="button"
+            class="favorite-cta-btn"
+            [class.active]="isFavorito"
+            (click)="toggleFavorito()"
+          >
+            <ion-icon [name]="isFavorito ? 'heart' : 'heart-outline'"></ion-icon>
+            <span>{{ isFavorito ? 'Guardada en Favoritos' : 'Agregar a Favoritos' }}</span>
+          </button>
+        </div>
+
+        <!-- Géneros -->
+        @if (pelicula.genres && pelicula.genres.length > 0) {
+          <div class="section-block">
+            <h3 class="section-title">Géneros</h3>
+            <div class="genres-list">
+              @for (g of pelicula.genres; track g.id) {
+                <ion-chip class="detail-genre-chip">
+                  {{ g.name }}
+                </ion-chip>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Sinopsis -->
+        <div class="section-block">
+          <h3 class="section-title">Sinopsis</h3>
+          <p class="overview-text">
+            {{ pelicula.overview || 'No hay sinopsis disponible en español para esta película.' }}
+          </p>
+        </div>
+
+        <!-- Ficha Técnica Adicional -->
+        <div class="section-block info-grid-block">
+          <h3 class="section-title">Información Adicional</h3>
+          <div class="info-grid">
+            @if (pelicula.original_language) {
+              <div class="info-cell">
+                <span class="info-label">Idioma original</span>
+                <span class="info-val">{{ pelicula.original_language | uppercase }}</span>
+              </div>
+            }
+
+            @if (pelicula.budget && pelicula.budget > 0) {
+              <div class="info-cell">
+                <span class="info-label">Presupuesto</span>
+                <span class="info-val">{{ formatCurrency(pelicula.budget) }}</span>
+              </div>
+            }
+
+            @if (pelicula.revenue && pelicula.revenue > 0) {
+              <div class="info-cell">
+                <span class="info-label">Recaudación</span>
+                <span class="info-val">{{ formatCurrency(pelicula.revenue) }}</span>
+              </div>
+            }
+
+            @if (pelicula.popularity) {
+              <div class="info-cell">
+                <span class="info-label">Popularidad TMDB</span>
+                <span class="info-val">{{ pelicula.popularity | number:'1.0-0' }} pts</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Compañías de producción -->
+        @if (pelicula.production_companies && pelicula.production_companies.length > 0) {
+          <div class="section-block">
+            <h3 class="section-title">Compañías de Producción</h3>
+            <div class="companies-list">
+              @for (c of pelicula.production_companies; track c.id) {
+                <div class="company-badge">
+                  <span>{{ c.name }}</span>
+                  @if (c.origin_country) {
+                    <small>({{ c.origin_country }})</small>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Toast de notificación de favoritos -->
+  <ion-toast
+    [isOpen]="showToast"
+    [message]="toastMessage"
+    [duration]="2000"
+    (didDismiss)="showToast = false"
+    position="bottom"
+    class="custom-toast"
+  ></ion-toast>
+</ion-content>

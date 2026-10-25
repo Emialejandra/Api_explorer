@@ -1,0 +1,45 @@
+/**
+ * CineExplorer Theme Variables
+ * Paleta moderna inspirada en plataformas de streaming cinematográfico
+ */
+
+:root {
+  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Color Primario: Rojo Cinemático */
+  --ion-color-primary: #e50914;
+  --ion-color-primary-rgb: 229, 9, 20;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #ca0812;
+  --ion-color-primary-tint: #e8222c;
+
+  /* Color Danger / Favoritos */
+  --ion-color-danger: #e11d48;
+  --ion-color-danger-rgb: 225, 29, 72;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #c61a3f;
+  --ion-color-danger-tint: #e4345a;
+
+  /* Color Warning / Estrellas */
+  --ion-color-warning: #f5c518;
+  --ion-color-warning-rgb: 245, 197, 24;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+
+  /* Fondo oscuro por defecto */
+  --ion-background-color: #0b0e14;
+  --ion-background-color-rgb: 11, 14, 20;
+  --ion-text-color: #f1f5f9;
+  --ion-text-color-rgb: 241, 245, 249;
+
+  /* Toolbar & Headers */
+  --ion-toolbar-background: #0b0e14;
+  --ion-toolbar-color: #ffffff;
+  --ion-toolbar-border-color: rgba(255, 255, 255, 0.08);
+
+  /* Card and Item */
+  --ion-card-background: #141822;
+  --ion-item-background: #141822;
+}

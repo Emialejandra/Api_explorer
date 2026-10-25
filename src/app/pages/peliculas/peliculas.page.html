@@ -1,0 +1,222 @@
+<ion-header [translucent]="true" class="cine-header">
+  <ion-toolbar class="main-toolbar">
+    <div class="header-content">
+      <div class="brand">
+        <ion-icon name="film-outline" class="brand-icon"></ion-icon>
+        <ion-title class="brand-title">Cine<span>Explorer</span></ion-title>
+      </div>
+
+      <ion-buttons slot="end">
+        <ion-button (click)="irAFavoritos()" class="fav-nav-btn" aria-label="Ver favoritos">
+          <ion-icon name="heart" class="nav-fav-icon"></ion-icon>
+          @if (totalFavoritos > 0) {
+            <ion-badge class="fav-badge">{{ totalFavoritos }}</ion-badge>
+          }
+        </ion-button>
+      </ion-buttons>
+    </div>
+  </ion-toolbar>
+
+  <!-- Barra de búsqueda -->
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearchChange($event)"
+      (ionClear)="limpiarBusqueda()"
+      placeholder="Buscar películas en TMDB..."
+      debounce="0"
+      show-clear-button="focus"
+      animated="true"
+      class="custom-searchbar"
+    ></ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Filtro de géneros deslizable -->
+  @if (generos.length > 0) {
+    <div class="genres-bar">
+      <div class="chips-scroll">
+        <ion-chip
+          [class.selected-chip]="selectedGeneroId === null"
+          (click)="seleccionarGenero(null)"
+          class="genre-chip"
+        >
+          Todos
+        </ion-chip>
+        @for (g of generos; track g.id) {
+          <ion-chip
+            [class.selected-chip]="selectedGeneroId === g.id"
+            (click)="seleccionarGenero(g.id)"
+            class="genre-chip"
+          >
+            {{ g.name }}
+          </ion-chip>
+        }
+      </div>
+    </div>
+  }
+</ion-header>
+
+<ion-content [fullscreen]="true" class="catalog-content">
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="refresh-outline"
+      pullingText="Desliza para actualizar"
+      refreshingSpinner="crescent"
+      refreshingText="Consultando TMDB..."
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="content-wrapper">
+    <!-- Estado: Cargando Inicial (Skeleton Loader) -->
+    @if (isInitialLoading && peliculas.length === 0) {
+      <div class="skeleton-grid">
+        @for (item of [1,2,3,4,5,6]; track item) {
+          <div class="skeleton-card">
+            <div class="skeleton-poster">
+              <ion-spinner name="crescent" color="danger"></ion-spinner>
+            </div>
+            <div class="skeleton-info">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line subtitle"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Estado: Error (Red, Autenticación o Servidor) -->
+    @if (errorMessage && !isInitialLoading) {
+      <div class="error-container">
+        <div class="error-card">
+          <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+          <h3 class="error-title">
+            {{ isAuthError ? 'Configuración de Credenciales' : 'Error de Conexión' }}
+          </h3>
+          <p class="error-message">{{ errorMessage }}</p>
+
+          @if (isAuthError) {
+            <div class="config-instructions">
+              <h4>Cómo configurar tu clave de TMDB:</h4>
+              <ol>
+                <li>Regístrate gratis en <code>themoviedb.org</code>.</li>
+                <li>Obtén tu API Key en <code>Configuración > API</code>.</li>
+                <li>Ábrelo en <code>src/environments/environment.ts</code>.</li>
+                <li>Pega tu clave en <code>tmdbApiKey</code>.</li>
+              </ol>
+            </div>
+          }
+
+          <ion-button (click)="resetYConsultar()" class="retry-btn">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Reintentar conexión
+          </ion-button>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Búsqueda sin resultados -->
+    @if (!isInitialLoading && !errorMessage && searchQuery.trim() && peliculas.length === 0) {
+      <div class="empty-search-container">
+        <div class="empty-icon-wrap">
+          <ion-icon name="search-outline"></ion-icon>
+        </div>
+        <h3>Sin resultados para "{{ searchQuery }}"</h3>
+        <p>No encontramos películas que coincidan con tu búsqueda en TMDB.</p>
+        <ion-button fill="outline" color="light" (click)="limpiarBusqueda()">
+          Limpiar búsqueda
+        </ion-button>
+      </div>
+    }
+
+    <!-- Estado: Género sin resultados -->
+    @if (!isInitialLoading && !errorMessage && !searchQuery.trim() && selectedGeneroId && peliculas.length === 0) {
+      <div class="empty-search-container">
+        <div class="empty-icon-wrap">
+          <ion-icon name="film-outline"></ion-icon>
+        </div>
+        <h3>Sin películas en {{ nombreGeneroSeleccionado }}</h3>
+        <p>No encontramos películas en esta categoría en TMDB.</p>
+        <ion-button fill="outline" color="light" (click)="seleccionarGenero(null)">
+          Ver todas las películas
+        </ion-button>
+      </div>
+    }
+
+    <!-- Título de sección si hay películas -->
+    @if (peliculasFiltradas.length > 0) {
+      <div class="section-header">
+        <h2 class="section-title">
+          {{ searchQuery ? 'Resultados para "' + searchQuery + '"' : (nombreGeneroSeleccionado ? 'Películas de ' + nombreGeneroSeleccionado : 'Películas Populares') }}
+        </h2>
+        <span class="count-badge">{{ peliculasFiltradas.length }} películas</span>
+      </div>
+
+      <!-- Cuadrícula de Películas -->
+      <div class="movies-grid">
+        @for (pelicula of peliculasFiltradas; track pelicula.id) {
+          <div
+            class="movie-card"
+            (click)="verDetalle(pelicula.id)"
+          >
+            <div class="poster-container">
+              <img
+                [src]="getPosterUrl(pelicula.poster_path)"
+                [alt]="pelicula.title"
+                (error)="onImageError($event)"
+                loading="lazy"
+                class="poster-img"
+              />
+
+              <!-- Botón de Favorito Flotante -->
+              <button
+                type="button"
+                class="fav-toggle-btn"
+                [class.is-fav]="esFavorito(pelicula.id)"
+                (click)="toggleFavorito($event, pelicula)"
+                [attr.aria-label]="esFavorito(pelicula.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+              >
+                <ion-icon [name]="esFavorito(pelicula.id) ? 'heart' : 'heart-outline'"></ion-icon>
+              </button>
+
+              <!-- Badge de Calificación -->
+              @if (pelicula.vote_average !== undefined) {
+                <div class="rating-badge">
+                  <ion-icon name="star" class="star-icon"></ion-icon>
+                  <span>{{ pelicula.vote_average | number:'1.1-1' }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="movie-info">
+              <h3 class="movie-title" [title]="pelicula.title">{{ pelicula.title }}</h3>
+              <div class="movie-meta">
+                <span class="movie-year">{{ getYear(pelicula.release_date) }}</span>
+                <span class="movie-quality">HD</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- R2: Infinite Scrolling obligatorio -->
+    <ion-infinite-scroll
+      (ionInfinite)="loadMore($event)"
+      [disabled]="isInfiniteDisabled || isLoading"
+      threshold="150px"
+    >
+      <ion-infinite-scroll-content
+        loadingSpinner="bubbles"
+        loadingText="Cargando más películas de TMDB..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+    <!-- Indicador de fin de catálogo -->
+    @if (isInfiniteDisabled && peliculas.length > 0) {
+      <div class="end-of-catalog">
+        <span>Has llegado al final de los resultados</span>
+      </div>
+    }
+  </div>
+</ion-content>

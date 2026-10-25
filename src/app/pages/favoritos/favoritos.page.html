@@ -1,0 +1,115 @@
+<ion-header [translucent]="true" class="favs-header">
+  <ion-toolbar class="favs-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/peliculas" text="" icon="arrow-back" class="custom-back-btn"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="favs-title">
+      Mis Favoritos
+    </ion-title>
+    @if (favoritos.length > 0) {
+      <ion-buttons slot="end">
+        <ion-button (click)="showAlertConfirm = true" color="danger" class="clear-all-btn">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="favs-content">
+  <div class="favs-wrapper">
+    <!-- Encabezado con contador -->
+    @if (favoritos.length > 0) {
+      <div class="header-strip">
+        <div class="strip-left">
+          <ion-icon name="heart" class="strip-heart-icon"></ion-icon>
+          <span class="strip-title">Películas Guardadas</span>
+        </div>
+        <span class="strip-count">{{ favoritos.length }} películas</span>
+      </div>
+    }
+
+    <!-- Lista Vacía -->
+    @if (favoritos.length === 0) {
+      <div class="empty-favs-view">
+        <div class="empty-icon-circle">
+          <ion-icon name="heart-dislike-outline"></ion-icon>
+        </div>
+        <h2 class="empty-title">Aún no tienes favoritos</h2>
+        <p class="empty-desc">
+          Explora las películas más destacadas del catálogo de TMDB y presiona el icono de corazón en cualquier película para guardarla aquí.
+        </p>
+        <ion-button (click)="irACatalogo()" class="explore-cta-btn">
+          <ion-icon name="film-outline" slot="start"></ion-icon>
+          Explorar catálogo de películas
+        </ion-button>
+      </div>
+    }
+
+    <!-- Cuadrícula de Favoritos -->
+    @if (favoritos.length > 0) {
+      <div class="favs-grid">
+        @for (pelicula of favoritos; track pelicula.id) {
+          <div
+            class="fav-card"
+            (click)="verDetalle(pelicula.id)"
+          >
+            <div class="poster-wrap">
+              <img
+                [src]="getPosterUrl(pelicula.poster_path)"
+                [alt]="pelicula.title"
+                (error)="onPosterError($event)"
+                loading="lazy"
+                class="poster-img"
+              />
+
+              <!-- Botón Eliminar de Favoritos -->
+              <button
+                type="button"
+                class="remove-fav-btn"
+                (click)="eliminar($event, pelicula)"
+                aria-label="Quitar de favoritos"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+
+              <!-- Rating Badge -->
+              @if (pelicula.vote_average !== undefined) {
+                <div class="rating-tag">
+                  <ion-icon name="star" class="star-icon"></ion-icon>
+                  <span>{{ pelicula.vote_average | number:'1.1-1' }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="fav-info">
+              <h3 class="fav-title" [title]="pelicula.title">{{ pelicula.title }}</h3>
+              <div class="fav-meta">
+                <span class="fav-year">{{ getYear(pelicula.release_date) }}</span>
+                <span class="fav-action-hint">Ver detalle &rarr;</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Alerta de Confirmación de Borrado Total -->
+  <ion-alert
+    [isOpen]="showAlertConfirm"
+    header="Eliminar favoritos"
+    message="¿Estás seguro de que deseas eliminar todas las películas de tu lista de favoritos?"
+    [buttons]="alertButtons"
+    (didDismiss)="showAlertConfirm = false"
+  ></ion-alert>
+
+  <!-- Toast de Confirmación -->
+  <ion-toast
+    [isOpen]="showToast"
+    [message]="toastMessage"
+    [duration]="2000"
+    (didDismiss)="showToast = false"
+    position="bottom"
+  ></ion-toast>
+</ion-content>
