@@ -32,25 +32,25 @@ CineExplorer reúne en una sola aplicación las herramientas principales para de
 
 Vista principal con películas populares, búsqueda y filtros por género.
 
-![Pantalla de inicio y catálogo de películas](./docs/screenshot/pantalla-inicio.png)
+![Pantalla de inicio y catálogo de películas](./docs/screenshot/pantalla-inicio.jpeg)
 
 ### Detalle de película
 
 Información ampliada de una película y acceso a la acción de favoritos.
 
-![Detalle de una película](./docs/screenshot/detalle-pelicula.png)
+![Detalle de una película](./docs/screenshot/detalle-pelicula.jpeg)
 
 ### Favoritos
 
 Películas guardadas por el usuario y controles para administrarlas.
 
-![Lista de películas favoritas](./docs/screenshot/favoritos.png)
+![Lista de películas favoritas](./docs/screenshot/favoritos.jpeg)
 
 ### Resultado final
 
 Captura general de la aplicación en su estado final.
 
-![Resultado final de CineExplorer](./docs/screenshot/resultado-final.png)
+![Resultado final de CineExplorer](./docs/screenshot/resultado-final.jpeg)
 
 ## Tecnologías
 
