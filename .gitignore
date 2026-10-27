@@ -68,3 +68,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local environment files may contain TMDB credentials
+/src/environments/environment*.ts
+!/src/environments/environment.example.ts
